@@ -6,6 +6,7 @@
  * Run : ./serial_linked_list <n> <m> <mMember> <mInsert> <mDelete>
  *
  * */
+
 #include<stdio.h>
 #include<stdlib.h>
 #include <sys/time.h>
@@ -38,22 +39,31 @@ void getInput(int argc, char *argv[]);
 double CalcTime(struct timeval time_begin, struct timeval time_end);
 
 
+//Linked List Deletion function
+int Delete(int value, struct list_node_s **head_pp) {
+    struct list_node_s *curr_p = *head_pp;
+    struct list_node_s *pred_p = NULL;
 
+    while (curr_p != NULL && curr_p->data < value) {
+        pred_p = curr_p;
+        curr_p = curr_p->next;
+    }
 
-
-//Linked List Membership function
-int Member(int value, struct list_node_s *head_p) {
-    struct list_node_s *current_p = head_p;
-
-    while (current_p != NULL && current_p->data < value)
-        current_p = current_p->next;
-
-    if (current_p == NULL || current_p->data > value) {
-        return 0;
+    if (curr_p != NULL && curr_p->data == value) {
+        if (pred_p == NULL) {
+            *head_pp = curr_p->next;
+            free(curr_p);
+        }
+        else {
+            pred_p->next = curr_p->next;
+            free(curr_p);
+        }
+        return 1;
     }
     else
-        return 1;
+        return 0;
 }
+
 
 //Linked List Insertion function
 int Insert(int value, struct list_node_s **head_pp) {
@@ -82,29 +92,58 @@ int Insert(int value, struct list_node_s **head_pp) {
         return 0;
 }
 
-//Linked List Deletion function
-int Delete(int value, struct list_node_s **head_pp) {
-    struct list_node_s *curr_p = *head_pp;
-    struct list_node_s *pred_p = NULL;
+//Linked List Membership function
+int Member(int value, struct list_node_s *head_p) {
+    struct list_node_s *current_p = head_p;
 
-    while (curr_p != NULL && curr_p->data < value) {
-        pred_p = curr_p;
-        curr_p = curr_p->next;
-    }
+    while (current_p != NULL && current_p->data < value)
+        current_p = current_p->next;
 
-    if (curr_p != NULL && curr_p->data == value) {
-        if (pred_p == NULL) {
-            *head_pp = curr_p->next;
-            free(curr_p);
-        }
-        else {
-            pred_p->next = curr_p->next;
-            free(curr_p);
-        }
-        return 1;
+    if (current_p == NULL || current_p->data > value) {
+        return 0;
     }
     else
-        return 0;
+        return 1;
 }
+
+
+//Getting the inputs
+void getInput(int argc, char *argv[]) {
+    if (argc != 6) {
+        printf("Please give the command: ./serial_linked_list <n> <m> <mMember> <mInsert> <mDelete>\n");
+        exit(0);
+    }
+
+    n = (int) strtol(argv[1], (char **) NULL, 10);
+    m = (int) strtol(argv[2], (char **) NULL, 10);
+
+    m_member_frac = (float) atof(argv[3]);
+    m_insert_frac = (float) atof(argv[4]);
+    m_delete_frac = (float) atof(argv[5]);
+
+    //Validating the arguments
+    if (n <= 0 || m <= 0 || m_member_frac + m_insert_frac + m_delete_frac != 1.0) {
+        printf("Please give the command with the arguements: ./serial_linked_list <n> <m> <mMember> <mInsert> <mDelete>\n");
+
+        if (n <= 0)
+            printf("Please provide a valid number of nodes for the linked list (value of n)\n");
+
+        if (m <= 0)
+            printf("Please provide a valid number of operations for the linked list (value of m)\n");
+
+        if (m_member_frac + m_insert_frac + m_delete_frac != 1.0)
+            printf("Please provide valid fractions of operations for the linked list (value of mMember, mInsert, mDelete)\n");
+
+        exit(0);
+    }
+}
+
+//Calculating time
+double CalcTime(struct timeval time_begin, struct timeval time_end) {
+    return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
+}
+
+
+
 
 
