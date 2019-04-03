@@ -36,7 +36,7 @@ int Member(int value, struct list_node_s *head_p);
 
 void getInput(int argc, char *argv[]);
 
-double CalcTime(struct timeval time_begin, struct timeval time_end);
+double CalcTime(struct timeval start_time, struct timeval end_time);
 
 
 //Linked List Deletion function
@@ -143,6 +143,61 @@ double CalcTime(struct timeval time_begin, struct timeval time_end) {
     return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
 }
 
+int main(){
+
+    struct list_node_s *head = NULL;
+    struct timeval start_time, end_time;
+
+    //Getting the inputs
+    getInput(argc, argv);
+
+    //Linked List Generation with Random values
+    int i = 0;
+    while (i < n) {
+        if (Insert(rand() % MAX_RANDOM, &head) == 1)
+            i++;
+    }
+
+    //Operations in the linked list
+    int operation_count = 0;
+    int member_count = 0;
+    int insert_count = 0;
+    int delete_count = 0;
+
+    float m_insert = m_insert_frac * m;
+    float m_delete = m_delete_frac * m;
+    float m_member = m_member_frac * m;
+
+    gettimeofday(&start_time, NULL);
+    while (operation_count < m) {
+
+        int rand_value = rand() % MAX_RANDOM;
+        int rand_select = rand() % 3;
+
+        if (rand_select == 0 && member_count < m_member) {
+            Member(rand_value, head);
+            member_count++;
+        }
+
+        if (rand_select == 1 && insert_count < m_insert) {
+            Insert(rand_value, &head);
+            insert_count++;
+        }
+
+        else if (rand_select == 2 && delete_count < m_delete) {
+            Delete(rand_value, &head);
+            delete_count++;
+        }
+
+        operation_count = insert_count + member_count + delete_count;
+    }
+    gettimeofday(&end_time, NULL);
+
+    printf("Serial Linked List Time Spent : %.6f secs\n", CalcTime(start_time, end_time));
+
+    return 0;
+
+}
 
 
 
