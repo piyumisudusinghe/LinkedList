@@ -1,7 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include <sys/time.h>
 #include <pthread.h>
+#include <sys/time.h>
+#include <math.h>
+
 
 #define MAX_THREAD_COUNT 1024
 #define MAX_RANDOM_VALUE 65535
@@ -21,10 +23,13 @@ int thread_count = 0;
 // Total number of each operation
 float m_insert = 0.0, m_delete = 0.0, m_member = 0.0;
 
+//Number of execution times
+int n_executions = 0;
+
 struct list_node_s *head = NULL;
 pthread_mutex_t mutex;
 
-// Node definition
+// Definition of the node
 struct list_node_s {
     int data;
     struct list_node_s *next;
@@ -47,37 +52,36 @@ int main(int argc, char *argv[]) {
     // Obtaining the inputs
     getArguments(argc, argv);
 
-    for(int count=0;count<50;count++){
+    double elapsedTime[n_executions];
+
+    for(int count=0;count<n_executions;count++){
         pthread_t *thread_handlers;
         thread_handlers = malloc(sizeof(pthread_t) * thread_count);
-        //float elapsedTime[5];
 
         // time variables
         struct timeval time_begin, time_end;
 
         // Linked List Generation with Random values
         int i = 0;
-        //printf("%d",i);
         while (i < n) {
             if (Insert(rand() % 65535, &head) == 1)
                 i++;
         }
-         //printf("%d",i);
+         
         // Initializing the mutex
         pthread_mutex_init(&mutex, NULL);
 
         // Getting the begin time stamp
         gettimeofday(&time_begin, NULL);
-        //printf("time begin %d - %d",(double)time_begin.tv_sec/100000,(double)time_begin.tv_usec/1000000);
 
-        // Thread Creation
+        // Create threads
         i = 0;
         while (i < thread_count) {
             pthread_create(&thread_handlers[i], NULL, (void *) ManageThreads, NULL);
             i++;
         }
 
-        // Thread Join
+        // Join threads
         i = 0;
         while (i < thread_count) {
             pthread_join(thread_handlers[i], NULL);
@@ -86,14 +90,29 @@ int main(int argc, char *argv[]) {
 
         // Getting the end time stamp
         gettimeofday(&time_end, NULL);
-        //printf("time end %d - %d\n",(double)time_end.tv_sec/1000000,(double)time_end.tv_usec/1000000);
+        elapsedTime[count]=CalculateTime(time_begin,time_end);
         printf("Execurion time - %d is %.6f\n",count,CalculateTime(time_begin,time_end));
         head = NULL;
 
         // Destroying the mutex
         pthread_mutex_destroy(&mutex);
     }
+    double total_time_spent = 0;
+    for(int j=0;j<n_executions;j++){
+        total_time_spent = total_time_spent + elapsedTime[j];
+    }
 
+    double mean = total_time_spent/n_executions;
+
+    double squared_diffrence =0;
+    for(int j=0;j<n_executions;j++){
+        squared_diffrence = squared_diffrence + (elapsedTime[j]-mean)*(elapsedTime[j]-mean);
+    }
+
+    double std = sqrt(squared_diffrence/n_executions);
+
+    printf("Mutex_Linked_List Mean execution time is %6f seconds\n",mean);
+    printf("Mutex_Linked_List standard deviation is %6f seconds\n",std);
     return 0;
 }
 
@@ -130,12 +149,8 @@ int Insert(int value, struct list_node_s **head_pp) {
         temp_p->data = value;
         temp_p->next = curr_p;
 
-        if (pred_p == NULL){ 
-           if(temp_p->next==NULL){
-                printf("head\n");
-           }
+        if (pred_p == NULL)
             *head_pp = temp_p;
-        }
         else
             pred_p->next = temp_p;
 
@@ -174,8 +189,7 @@ int Delete(int value, struct list_node_s **head_pp) {
 //Getting the inputs
 void getArguments(int argc, char *argv[]) {
 
-    if(argc==7){
-    
+    if(argc==8){
         n = (int) strtol(argv[1], (char **) NULL, 10);   //setting number of nodes - n 
         m = (int) strtol(argv[2], (char **) NULL, 10);   //setting number of operations - m
 
@@ -212,12 +226,17 @@ void getArguments(int argc, char *argv[]) {
             m_member = m_member_frac * m;
         }
 
+        //setting number of executions
+         n_executions = (float) atof(argv[7]); 
+
+         if(n_executions<=0){
+            printf("Please enter valid number of executions as the last argument\n");
+            exit(0);
+         }
     }else{
         printf("Please run [./mutex_linked_list <n> <m> <thread_count> <mMember> <mInsert> <mDelete>] with the all arguments\n");
         exit(0);
     }
-
-
 }
 
 // Thread Operations
@@ -280,5 +299,5 @@ void *ManageThreads() {
 }
 
 double CalculateTime(struct timeval starting_time, struct timeval ending_time){
-    return (double) (ending_time.tv_usec -starting_time.tv_usec) / 1000000 + (double) (ending_time.tv_sec - starting_time.tv_sec);
+    return (double) (ending_time.tv_sec - starting_time.tv_sec)+(double) (ending_time.tv_usec -starting_time.tv_usec) / 1000000;
 }
