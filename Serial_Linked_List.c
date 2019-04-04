@@ -21,6 +21,10 @@ int m = 0;
 
 // Fractions of each operation
 float m_insert_frac, m_delete_frac, m_member_frac;
+float m_insert,m_delete,m_member;
+
+int program_execution_count;
+
 
 //Node definition
 struct list_node_s {
@@ -34,7 +38,7 @@ int Delete(int value, struct list_node_s **head_pp);
 
 int Member(int value, struct list_node_s *head_p);
 
-void getInput(int argc, char *argv[]);
+void getArguments(int argc, char *argv[]);
 
 double CalcTime(struct timeval start_time, struct timeval end_time);
 
@@ -108,9 +112,9 @@ int Member(int value, struct list_node_s *head_p) {
 
 
 //Getting the inputs
-void getInput(int argc, char *argv[]) {
-    if (argc != 6) {
-        printf("Please give the command: ./Serial_Linked_List <n> <m> <mMember> <mInsert> <mDelete>\n");
+void getArguments(int argc, char *argv[]) {
+    if (argc != 7) {
+        printf("Please give the command: ./Serial_Linked_List <n> <m> <mMember> <mInsert> <mDelete> <programExecutionCount>\n");
         exit(0);
     }
 
@@ -120,6 +124,8 @@ void getInput(int argc, char *argv[]) {
     m_member_frac = (float) atof(argv[3]);
     m_insert_frac = (float) atof(argv[4]);
     m_delete_frac = (float) atof(argv[5]);
+
+    program_execution_count = (int) strtol(argv[6], (char **) NULL, 10);
 
     //Handling user inputs
     if (n <= 0 || m <= 0 || m_member_frac + m_insert_frac + m_delete_frac != 1.0) {
@@ -135,6 +141,10 @@ void getInput(int argc, char *argv[]) {
             printf("Please enter valid fraction values\n");
 
         exit(0);
+    }else{
+        m_insert = m_insert_frac * m;
+        m_delete = m_delete_frac * m;
+        m_member = m_member_frac * m;
     }
 }
 
@@ -143,74 +153,85 @@ double CalcTime(struct timeval time_begin, struct timeval time_end) {
     return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
 }
 
-int main(){
+//main method which handle the execution of m operations
+int main(int argc, char *argv[]){
 
-    struct list_node_s *head = NULL;
-    struct timeval start_time, end_time;
-
+    int run_count = 0;
+    float execution_time[program_execution_count];
     //Getting the inputs
-    getInput(argc, argv);
+    getArguments(argc, argv);
 
-    //Linked List Generation with Random values
-    int i = 0;
-    while (i < n) {
-        if (Insert(rand() % MAX_RANDOM, &head) == 1)
-            i++;
-    }
+    while(run_count < program_execution_count){
+        struct list_node_s *head = NULL;
+        struct timeval start_time, end_time;
 
-    //Operations in the linked list
-    int operation_count = 0;
-    int member_count = 0;
-    int insert_count = 0;
-    int delete_count = 0;
+        //Linked List Generation with Random values
+        int i = 0;
+        while (i < n) {
+            if (Insert(rand() % MAX_RANDOM, &head) == 1)
+                i++;
+        }
 
-    float m_insert = m_insert_frac * m;
-    float m_delete = m_delete_frac * m;
-    float m_member = m_member_frac * m;
+        //Operations in the linked list
+        int operation_count = 0;
+        int member_count = 0;
+        int insert_count = 0;
+        int delete_count = 0;
 
-    gettimeofday(&start_time, NULL);
-    while (operation_count < m) {
+        gettimeofday(&start_time, NULL);
+        while (operation_count < m) {
 
-        int rand_value = rand() % MAX_RANDOM;
-        int rand_select;
+            int rand_value = rand() % MAX_RANDOM;
+            int rand_select;
 
-        if(member_count >= m_member){
-            rand_select = rand() % (2 + 1 - 1) + 1;
-        } else if (delete_count >= m_delete) {
-            rand_select = rand() % (1 + 1 - 0) + 0;
-        }else if (insert_count >= m_insert){
-            rand_select = rand() % (2 + 1 -0) + 0 ;
-            while(rand_select == 1){
-                rand_select = rand() % (2 + 1 -0) + 0;
+            if(member_count >= m_member){
+                rand_select = rand() % (2 + 1 - 1) + 1;
+            } else if (delete_count >= m_delete) {
+                rand_select = rand() % (1 + 1 - 0) + 0;
+            }else if (insert_count >= m_insert){
+                rand_select = rand() % (2 + 1 -0) + 0 ;
+                while(rand_select == 1){
+                    rand_select = rand() % (2 + 1 -0) + 0;
+                }
+            }else {
+                rand_select = rand() % 3;
             }
-        }else {
-            rand_select = rand() % 3;
+
+
+            if (rand_select == 0 && member_count < m_member) {
+                Member(rand_value, head);
+                member_count++;
+            }
+
+            if (rand_select == 1 && insert_count < m_insert) {
+                Insert(rand_value, &head);
+                insert_count++;
+            }
+
+            else if (rand_select == 2 && delete_count < m_delete) {
+                Delete(rand_value, &head);
+                delete_count++;
+            }
+
+            operation_count = insert_count + member_count + delete_count;
         }
 
+        gettimeofday(&end_time, NULL);
+        float time_spent = CalcTime(start_time, end_time);
 
-        if (rand_select == 0 && member_count < m_member) {
-            Member(rand_value, head);
-            member_count++;
-        }
+        printf("Serial Linked List Time Spent : %.6f secs\n", time_spent);
+        execution_time[run_count] = time_spent;
+        run_count++;
 
-        if (rand_select == 1 && insert_count < m_insert) {
-            Insert(rand_value, &head);
-            insert_count++;
-        }
-
-        else if (rand_select == 2 && delete_count < m_delete) {
-            Delete(rand_value, &head);
-            delete_count++;
-        }
-
-        operation_count = insert_count + member_count + delete_count;
     }
 
-    gettimeofday(&end_time, NULL);
+    float mean;
 
-    printf("Serial Linked List Time Spent : %.6f secs\n", CalcTime(start_time, end_time));
+    for(i = 0; i < sizeof(execution_time) / sizeof(float); i++)
+    {
 
-    return 0;
+    }
+
 
 }
 
