@@ -40,52 +40,59 @@ void getArguments(int argc, char *argv[]);
 
 void *ManageThreads();
 
+double CalculateTime(struct timeval starting_time, struct timeval ending_time);
 
 int main(int argc, char *argv[]) {
 
     // Obtaining the inputs
     getArguments(argc, argv);
 
-    pthread_t *thread_handlers;
-    thread_handlers = malloc(sizeof(pthread_t) * thread_count);
+    for(int count=0;count<50;count++){
+        pthread_t *thread_handlers;
+        thread_handlers = malloc(sizeof(pthread_t) * thread_count);
+        //float elapsedTime[5];
 
-    // time variables
-    struct timeval time_begin, time_end;
+        // time variables
+        struct timeval time_begin, time_end;
 
-    // Linked List Generation with Random values
-    int i = 0;
-    while (i < n) {
-        if (Insert(rand() % 65535, &head) == 1)
+        // Linked List Generation with Random values
+        int i = 0;
+        //printf("%d",i);
+        while (i < n) {
+            if (Insert(rand() % 65535, &head) == 1)
+                i++;
+        }
+         //printf("%d",i);
+        // Initializing the mutex
+        pthread_mutex_init(&mutex, NULL);
+
+        // Getting the begin time stamp
+        gettimeofday(&time_begin, NULL);
+        //printf("time begin %d - %d",(double)time_begin.tv_sec/100000,(double)time_begin.tv_usec/1000000);
+
+        // Thread Creation
+        i = 0;
+        while (i < thread_count) {
+            pthread_create(&thread_handlers[i], NULL, (void *) ManageThreads, NULL);
             i++;
+        }
+
+        // Thread Join
+        i = 0;
+        while (i < thread_count) {
+            pthread_join(thread_handlers[i], NULL);
+            i++;
+        }
+
+        // Getting the end time stamp
+        gettimeofday(&time_end, NULL);
+        //printf("time end %d - %d\n",(double)time_end.tv_sec/1000000,(double)time_end.tv_usec/1000000);
+        printf("Execurion time - %d is %.6f\n",count,CalculateTime(time_begin,time_end));
+        head = NULL;
+
+        // Destroying the mutex
+        pthread_mutex_destroy(&mutex);
     }
-
-    // Initializing the mutex
-    pthread_mutex_init(&mutex, NULL);
-
-    // Getting the begin time stamp
-    gettimeofday(&time_begin, NULL);
-
-    // Thread Creation
-    i = 0;
-    while (i < thread_count) {
-        pthread_create(&thread_handlers[i], NULL, (void *) ManageThreads, NULL);
-        i++;
-    }
-
-    // Thread Join
-    i = 0;
-    while (i < thread_count) {
-        pthread_join(thread_handlers[i], NULL);
-        i++;
-    }
-
-    // Getting the end time stamp
-    gettimeofday(&time_end, NULL);
-
-    // Destroying the mutex
-    pthread_mutex_destroy(&mutex);
-
-    printf("Linked List with a single mutex Time Spent ");
 
     return 0;
 }
@@ -123,8 +130,12 @@ int Insert(int value, struct list_node_s **head_pp) {
         temp_p->data = value;
         temp_p->next = curr_p;
 
-        if (pred_p == NULL)
+        if (pred_p == NULL){ 
+           if(temp_p->next==NULL){
+                printf("head\n");
+           }
             *head_pp = temp_p;
+        }
         else
             pred_p->next = temp_p;
 
@@ -214,7 +225,7 @@ void *ManageThreads() {
 
     int count_tot = 0;
 
-    int is_finished_member = 0;
+    int is_member_finished = 0;
     int is_insert_finished = 0;
     int is_delete_finished = 0;
 
@@ -227,14 +238,14 @@ void *ManageThreads() {
         int random_select = rand() % 3;
 
         // Member operation
-        if (random_select == 0 && is_finished_member == 0) {
+        if (random_select == 0 && is_member_finished == 0) {
 
             pthread_mutex_lock(&mutex);
             if (member_opt_count < m_member) {
                 Member(random_value, head);
                 member_opt_count++;
             }else
-                is_finished_member =1;
+                is_member_finished =1;
             pthread_mutex_unlock(&mutex);
         }
 
@@ -266,4 +277,8 @@ void *ManageThreads() {
         count_tot = insert_opt_count + member_opt_count + delete_opt_count;
     }
     return NULL;
+}
+
+double CalculateTime(struct timeval starting_time, struct timeval ending_time){
+    return (double) (ending_time.tv_usec -starting_time.tv_usec) / 1000000 + (double) (ending_time.tv_sec - starting_time.tv_sec);
 }
