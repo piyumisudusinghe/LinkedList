@@ -110,7 +110,7 @@ int Member(int value, struct list_node_s *head_p) {
 //Getting the inputs
 void getInput(int argc, char *argv[]) {
     if (argc != 6) {
-        printf("Please give the command: ./serial_linked_list <n> <m> <mMember> <mInsert> <mDelete>\n");
+        printf("Please give the command: ./Serial_Linked_List <n> <m> <mMember> <mInsert> <mDelete>\n");
         exit(0);
     }
 
@@ -121,18 +121,18 @@ void getInput(int argc, char *argv[]) {
     m_insert_frac = (float) atof(argv[4]);
     m_delete_frac = (float) atof(argv[5]);
 
-    //Validating the arguments
+    //Handling user inputs
     if (n <= 0 || m <= 0 || m_member_frac + m_insert_frac + m_delete_frac != 1.0) {
-        printf("Please give the command with the arguements: ./serial_linked_list <n> <m> <mMember> <mInsert> <mDelete>\n");
+        printf("Please enter valid argument types\n");
 
         if (n <= 0)
-            printf("Please provide a valid number of nodes for the linked list (value of n)\n");
+            printf("Value of n should be greater than 0\n");
 
         if (m <= 0)
-            printf("Please provide a valid number of operations for the linked list (value of m)\n");
+            printf("value of m should be greater than 0\n");
 
         if (m_member_frac + m_insert_frac + m_delete_frac != 1.0)
-            printf("Please provide valid fractions of operations for the linked list (value of mMember, mInsert, mDelete)\n");
+            printf("Please enter valid fraction values\n");
 
         exit(0);
     }
@@ -191,6 +191,7 @@ int main(){
 
         operation_count = insert_count + member_count + delete_count;
     }
+
     gettimeofday(&end_time, NULL);
 
     printf("Serial Linked List Time Spent : %.6f secs\n", CalcTime(start_time, end_time));
