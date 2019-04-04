@@ -86,8 +86,8 @@ int main(int argc, char *argv[]) {
 
         // Getting the end time stamp
         gettimeofday(&time_end, NULL);
-        printf("time end %d - %d\n",(double)time_end.tv_sec/1000000,(double)time_end.tv_usec/1000000);
-       // printf("Execurion time - %d is %.6f\n",count,CalculateTime(time_begin,time_end));
+        //printf("time end %d - %d\n",(double)time_end.tv_sec/1000000,(double)time_end.tv_usec/1000000);
+        printf("Execurion time - %d is %.6f\n",count,CalculateTime(time_begin,time_end));
         head = NULL;
 
         // Destroying the mutex
