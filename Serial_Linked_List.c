@@ -10,7 +10,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include <sys/time.h>
-
+#include <math.h>
 #define MAX_RANDOM 65535
 
 // Number of nodes in the linked list
@@ -219,18 +219,30 @@ int main(int argc, char *argv[]){
         gettimeofday(&end_time, NULL);
         float time_spent = CalcTime(start_time, end_time);
 
-        printf("Serial Linked List Time Spent : %.6f secs\n", time_spent);
+        printf("Serial Linked List Time Spent in iteration %d : %.6f secs\n", run_count, time_spent);
         execution_time[run_count] = time_spent;
         run_count++;
 
     }
 
     float mean;
+    double time_tot = 0.0;
+    double deviation = 0.0;
+    double difference_tot = 0.0;
 
-    for(i = 0; i < sizeof(execution_time) / sizeof(float); i++)
-    {
+    for(int i = 0; i < program_execution_count; i++){
+        time_tot = time_tot + execution_time[i];
 
     }
+
+    mean = time_tot/program_execution_count;
+    printf("Serial Linked List Average Time Spent : %.6f secs\n", mean);
+
+    for(int i = 0; i < program_execution_count; i++){
+        difference_tot = difference_tot + pow((execution_time[i] - mean),2);
+    }
+    deviation = sqrt((difference_tot/ program_execution_count));
+    printf("Serial Linked List Standard Deviation : %.6f secs\n", deviation);
 
 
 }
