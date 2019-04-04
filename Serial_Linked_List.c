@@ -172,7 +172,21 @@ int main(){
     while (operation_count < m) {
 
         int rand_value = rand() % MAX_RANDOM;
-        int rand_select = rand() % 3;
+        int rand_select;
+
+        if(member_count >= m_member){
+            rand_select = rand() % (2 + 1 - 1) + 1;
+        } else if (delete_count >= m_delete) {
+            rand_select = rand() % (1 + 1 - 0) + 0;
+        }else if (insert_count >= m_insert){
+            rand_select = rand() % (2 + 1 -0) + 0 ;
+            while(rand_select == 1){
+                rand_select = rand() % (2 + 1 -0) + 0;
+            }
+        }else {
+            rand_select = rand() % 3;
+        }
+
 
         if (rand_select == 0 && member_count < m_member) {
             Member(rand_value, head);
