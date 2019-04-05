@@ -104,6 +104,24 @@ int Delete(int value, struct list_node_s **head_pp) {
         return 0;
 }
 
+
+// Linked List Membership function
+int Member(int value, struct list_node_s *head_p) {
+    struct list_node_s *current_p = head_p;
+
+    while (current_p != NULL && current_p->data < value)
+        current_p = current_p->next;
+
+    if (current_p == NULL || current_p->data > value) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+
+}
+
+
 // Getting the inputs
 void getArgument(int argc, char *argv[]) {
 
@@ -217,7 +235,7 @@ void *Manage_Threads(void *thread_id) {
 
 
         // Member operation
-        if (random_select == 0 && finished_member == 0) {
+        if (rand_select == 0 && finished_member == 0) {
             if (member_count < local_m_member) {
                 pthread_rwlock_rdlock(&rwlock);
                 Member(random_value, head);
@@ -228,7 +246,7 @@ void *Manage_Threads(void *thread_id) {
         }
 
             // Insert Operation
-        else if (random_select == 1 && finished_insert == 0) {
+        else if (rand_select == 1 && finished_insert == 0) {
             if (insert_count < local_m_insert) {
                 pthread_rwlock_wrlock(&rwlock);
                 Insert(random_value, &head);
@@ -239,7 +257,7 @@ void *Manage_Threads(void *thread_id) {
         }
 
             // Delete Operation
-        else if (random_select == 2 && delete_finished == 0) {
+        else if (rand_select == 2 && delete_finished == 0) {
 
             if (delete_count < local_m_delete) {
                 pthread_rwlock_wrlock(&rwlock);
