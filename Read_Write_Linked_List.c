@@ -50,6 +50,8 @@ double CalcTime(struct timeval time_begin, struct timeval time_end);
 
 void *Manage_Threads(void *id);
 
+void RecordResults(float time);
+
 // Linked List Insertion function
 int Insert(int value, struct list_node_s **head_pp) {
     struct list_node_s *curr_p = *head_pp;
@@ -319,8 +321,16 @@ int main(int argc, char *argv[]) {
     }
     gettimeofday(&end_time, NULL);
     pthread_rwlock_destroy(&rwlock);
-
-    printf("Linked List with read write locks Time Spent : %.6f\n", CalcTime(start_time, end_time));
+    float time_spent = CalcTime(start_time, end_time);
+    RecordResults(time_spent);
+    printf("Linked List with read write locks Time Spent : %.6f\n", time_spent);
 
     return 0;
+}
+
+void RecordResults(float value){
+    FILE * fp;
+    fp = fopen ("Read_Write_Linked_List.csv", "a");
+    fprintf(fp, "%6f\n", value);
+    fclose(fp);
 }

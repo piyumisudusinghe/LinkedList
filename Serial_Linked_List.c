@@ -23,7 +23,7 @@ int m = 0;
 float m_insert_frac, m_delete_frac, m_member_frac;
 float m_insert,m_delete,m_member;
 
-int program_execution_count;
+
 
 
 //Node definition
@@ -41,6 +41,8 @@ int Member(int value, struct list_node_s *head_p);
 void getArguments(int argc, char *argv[]);
 
 double CalcTime(struct timeval start_time, struct timeval end_time);
+
+void RecordResults(float time);
 
 
 //Linked List Deletion function
@@ -215,10 +217,16 @@ int main(int argc, char *argv[]){
 
         gettimeofday(&end_time, NULL);
         float time_spent = CalcTime(start_time, end_time);
-
+        RecordResults(time_spent);
         printf("Serial Linked List Time Spent : %.6f secs\n",time_spent);
 
+}
 
+void RecordResults(float value){
+    FILE * fp;
+    fp = fopen ("Serial_Linked_List.csv", "a");
+    fprintf(fp, "%6f\n", value);
+    fclose(fp);
 }
 
 
