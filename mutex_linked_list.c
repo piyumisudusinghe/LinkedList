@@ -2,8 +2,6 @@
 #include<stdlib.h>
 #include <pthread.h>
 #include <sys/time.h>
-#include <math.h>
-
 
 #define MAX_THREAD_COUNT 1024
 
@@ -15,14 +13,17 @@ int member_opt_count = 0, insert_opt_count =0, delete_opt_count =0;
 // Number of nodes in the linked list
 int n = 0;
 
-// Number of random operations in the linked list
+// Number of operations in the linked list - given value
 int m = 0;
 
-// Number of threads to execute
+// Number of threads
 int thread_count = 0;
 
 // Total number of each operation
 float m_insert = 0.0, m_delete = 0.0, m_member = 0.0;
+
+//Count number of operations
+int count_tot = 0;
 
 struct list_node_s *head = NULL;
 pthread_mutex_t mutex;
@@ -43,9 +44,9 @@ void getArguments(int argc, char *argv[]);
 
 void *ManageThreads();
 
-void RecordResults();
-
 double CalculateTime(struct timeval starting_time, struct timeval ending_time);
+
+void RecordResults();
 
 int main(int argc, char *argv[]) {
 
@@ -214,9 +215,6 @@ void getArguments(int argc, char *argv[]) {
 
 // Thread Operations
 void *ManageThreads() {
-
-    int count_tot = 0;
-
     int is_member_finished = 0;
     int is_insert_finished = 0;
     int is_delete_finished = 0;
@@ -290,7 +288,7 @@ double CalculateTime(struct timeval starting_time, struct timeval ending_time){
 
 void RecordResults(double value){
     FILE * fp;
-   fp = fopen ("mutex_linked_list.csv", "a");
+   fp = fopen ("mutex_linked_list_test_th1_10_f1.csv", "a");
    fprintf(fp, "%6f\n", value);
    fclose(fp);
 }
