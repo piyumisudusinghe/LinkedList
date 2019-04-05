@@ -113,8 +113,8 @@ int Member(int value, struct list_node_s *head_p) {
 
 //Getting the inputs
 void getArguments(int argc, char *argv[]) {
-    if (argc != 7) {
-        printf("Please give the command: ./Serial_Linked_List <n> <m> <mMember> <mInsert> <mDelete> <programExecutionCount>\n");
+    if (argc != 6) {
+        printf("Please give the command: ./Serial_Linked_List <n> <m> <mMember> <mInsert> <mDelete>\n");
         exit(0);
     }
 
@@ -125,7 +125,6 @@ void getArguments(int argc, char *argv[]) {
     m_insert_frac = (float) atof(argv[4]);
     m_delete_frac = (float) atof(argv[5]);
 
-    program_execution_count = (int) strtol(argv[6], (char **) NULL, 10);
 
     //Handling user inputs
     if (n <= 0 || m <= 0 || m_member_frac + m_insert_frac + m_delete_frac != 1.0) {
@@ -156,23 +155,21 @@ double CalcTime(struct timeval time_begin, struct timeval time_end) {
 //main method which handle the execution of m operations
 int main(int argc, char *argv[]){
 
-    int run_count = 0;
-    float execution_time[program_execution_count];
+    struct list_node_s *head = NULL;
+    struct timeval start_time, end_time;
+
+
     //Getting the inputs
     getArguments(argc, argv);
 
-    while(run_count < program_execution_count){
-        struct list_node_s *head = NULL;
-        struct timeval start_time, end_time;
+    //Linked List Generation with Random values
+    int i = 0;
+    while (i < n) {
+        if (Insert(rand() % MAX_RANDOM, &head) == 1)
+            i++;
+    }
 
-        //Linked List Generation with Random values
-        int i = 0;
-        while (i < n) {
-            if (Insert(rand() % MAX_RANDOM, &head) == 1)
-                i++;
-        }
-
-        //Operations in the linked list
+    //Operations in the linked list
         int operation_count = 0;
         int member_count = 0;
         int insert_count = 0;
@@ -219,30 +216,7 @@ int main(int argc, char *argv[]){
         gettimeofday(&end_time, NULL);
         float time_spent = CalcTime(start_time, end_time);
 
-        printf("Serial Linked List Time Spent in iteration %d : %.6f secs\n", run_count, time_spent);
-        execution_time[run_count] = time_spent;
-        run_count++;
-
-    }
-
-    float mean;
-    double time_tot = 0.0;
-    double deviation = 0.0;
-    double difference_tot = 0.0;
-
-    for(int i = 0; i < program_execution_count; i++){
-        time_tot = time_tot + execution_time[i];
-
-    }
-
-    mean = time_tot/program_execution_count;
-    printf("Serial Linked List Average Time Spent : %.6f secs\n", mean);
-
-    for(int i = 0; i < program_execution_count; i++){
-        difference_tot = difference_tot + pow((execution_time[i] - mean),2);
-    }
-    deviation = sqrt((difference_tot/ program_execution_count));
-    printf("Serial Linked List Standard Deviation : %.6f secs\n", deviation);
+        printf("Serial Linked List Time Spent : %.6f secs\n",time_spent);
 
 
 }
