@@ -6,6 +6,7 @@
 
 
 #define MAX_THREAD_COUNT 1024
+
 #define MAX_RANDOM_VALUE 65535
 
 // Number of executed oprations member,insert and delete
@@ -22,9 +23,6 @@ int thread_count = 0;
 
 // Total number of each operation
 float m_insert = 0.0, m_delete = 0.0, m_member = 0.0;
-
-//Number of execution times
-int n_executions = 0;
 
 struct list_node_s *head = NULL;
 pthread_mutex_t mutex;
@@ -45,6 +43,8 @@ void getArguments(int argc, char *argv[]);
 
 void *ManageThreads();
 
+void RecordResults();
+
 double CalculateTime(struct timeval starting_time, struct timeval ending_time);
 
 int main(int argc, char *argv[]) {
@@ -52,67 +52,47 @@ int main(int argc, char *argv[]) {
     // Obtaining the inputs
     getArguments(argc, argv);
 
-    double elapsedTime[n_executions];
+    pthread_t *thread_handlers;
+    thread_handlers = malloc(sizeof(pthread_t) * thread_count);
 
-    for(int count=0;count<n_executions;count++){
-        pthread_t *thread_handlers;
-        thread_handlers = malloc(sizeof(pthread_t) * thread_count);
+    // time variables
+    struct timeval time_begin, time_end;
 
-        // time variables
-        struct timeval time_begin, time_end;
-
-        // Linked List Generation with Random values
-        int i = 0;
-        while (i < n) {
-            if (Insert(rand() % 65535, &head) == 1)
-                i++;
-        }
-         
-        // Initializing the mutex
-        pthread_mutex_init(&mutex, NULL);
-
-        // Getting the begin time stamp
-        gettimeofday(&time_begin, NULL);
-
-        // Create threads
-        i = 0;
-        while (i < thread_count) {
-            pthread_create(&thread_handlers[i], NULL, (void *) ManageThreads, NULL);
+    // Linked List Generation with Random values
+    int i = 0;
+    while (i < n) {
+        if (Insert(rand() % 65535, &head) == 1)
             i++;
-        }
-
-        // Join threads
-        i = 0;
-        while (i < thread_count) {
-            pthread_join(thread_handlers[i], NULL);
-            i++;
-        }
-
-        // Getting the end time stamp
-        gettimeofday(&time_end, NULL);
-        elapsedTime[count]=CalculateTime(time_begin,time_end);
-        printf("Execurion time - %d is %.6f\n",count,CalculateTime(time_begin,time_end));
-        head = NULL;
-
-        // Destroying the mutex
-        pthread_mutex_destroy(&mutex);
     }
-    double total_time_spent = 0;
-    for(int j=0;j<n_executions;j++){
-        total_time_spent = total_time_spent + elapsedTime[j];
+        
+    // Initializing the mutex
+    pthread_mutex_init(&mutex, NULL);
+
+    // Getting the begin time stamp
+    gettimeofday(&time_begin, NULL);
+
+    // Create threads
+    i = 0;
+    while (i < thread_count) {
+        pthread_create(&thread_handlers[i], NULL, (void *) ManageThreads, NULL);
+        i++;
     }
 
-    double mean = total_time_spent/n_executions;
-
-    double squared_diffrence =0;
-    for(int j=0;j<n_executions;j++){
-        squared_diffrence = squared_diffrence + (elapsedTime[j]-mean)*(elapsedTime[j]-mean);
+    // Join threads
+    i = 0;
+    while (i < thread_count) {
+        pthread_join(thread_handlers[i], NULL);
+        i++;
     }
 
-    double std = sqrt(squared_diffrence/n_executions);
+    // Getting the end time stamp
+    gettimeofday(&time_end, NULL);
+    head = NULL;
 
-    printf("Mutex_Linked_List Mean execution time is %6f seconds\n",mean);
-    printf("Mutex_Linked_List standard deviation is %6f seconds\n",std);
+    // Destroying the mutex
+    pthread_mutex_destroy(&mutex);
+    RecordResults(CalculateTime(time_begin,time_end));
+    printf("Mutex_Linked_List Mean execution time is %6f seconds\n",CalculateTime(time_begin,time_end));
     return 0;
 }
 
@@ -189,7 +169,7 @@ int Delete(int value, struct list_node_s **head_pp) {
 //Getting the inputs
 void getArguments(int argc, char *argv[]) {
 
-    if(argc==8){
+    if(argc==7){
         n = (int) strtol(argv[1], (char **) NULL, 10);   //setting number of nodes - n 
         m = (int) strtol(argv[2], (char **) NULL, 10);   //setting number of operations - m
 
@@ -226,13 +206,6 @@ void getArguments(int argc, char *argv[]) {
             m_member = m_member_frac * m;
         }
 
-        //setting number of executions
-         n_executions = (float) atof(argv[7]); 
-
-         if(n_executions<=0){
-            printf("Please enter valid number of executions as the last argument\n");
-            exit(0);
-         }
     }else{
         printf("Please run [./mutex_linked_list <n> <m> <thread_count> <mMember> <mInsert> <mDelete>] with the all arguments\n");
         exit(0);
@@ -300,4 +273,11 @@ void *ManageThreads() {
 
 double CalculateTime(struct timeval starting_time, struct timeval ending_time){
     return (double) (ending_time.tv_sec - starting_time.tv_sec)+(double) (ending_time.tv_usec -starting_time.tv_usec) / 1000000;
+}
+
+void RecordResults(double value){
+    FILE * fp;
+   fp = fopen ("mutex_linked_list.csv", "a");
+   fprintf(fp, "%6f\n", value);
+   fclose(fp);
 }
