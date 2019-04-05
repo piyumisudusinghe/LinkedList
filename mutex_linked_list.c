@@ -227,7 +227,20 @@ void *ManageThreads() {
         int random_value = rand() % MAX_RANDOM_VALUE;
 
         // Variable to randomly select one of the three operations
-        int random_select = rand() % 3;
+        int random_select;
+         if(member_opt_count >= m_member){
+                random_select = rand() % (2 + 1 - 1) + 1;
+            } else if (delete_opt_count >= m_delete) {
+                random_select = rand() % (1 + 1 - 0) + 0;
+            }else if (insert_opt_count >= m_insert){
+                random_select = rand() % (2 + 1 -0) + 0 ;
+                while(random_select == 1){
+                    random_select = rand() % (2 + 1 -0) + 0;
+                }
+            }else {
+                random_select = rand() % 3;
+            }
+
 
         // Member operation
         if (random_select == 0 && is_member_finished == 0) {
